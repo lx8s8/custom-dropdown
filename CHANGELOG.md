@@ -1,3 +1,14 @@
+# 3.1.2
+
+Fixed
+- Error Background Color**: Resolved an issue where a gray background would appear when an error message was displayed in the `CustomDropdown` widget. The `InputDecorator` within the `_CustomDropdownState` class now sets the `fillColor` to `Colors.transparent` when an error occurs, ensuring a consistent appearance without an unwanted background color.
+
+Changed
+- CustomDropdown**: Updated the `InputDecorator` in the `_CustomDropdownState` class to handle error states more effectively. The `fillColor` is now conditionally set based on the presence of an error, and the `filled` property is enabled to apply the `fillColor`.
+
+Notes
+- Ensure that any custom decorations applied to the `CustomDropdown` widget are compatible with these changes to maintain the desired appearance and functionality.
+  
 # 3.1.1
 
 - Fix: onChanged not invoked after first invocation (Thanks [@ravindrabarthwal for PR](https://github.com/AbdullahChauhan/custom-dropdown/pull/76))
