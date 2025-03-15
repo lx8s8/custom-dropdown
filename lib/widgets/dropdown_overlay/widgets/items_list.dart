@@ -7,9 +7,10 @@ class _ItemsList<T> extends StatelessWidget {
   final Function(T) onItemSelect;
   final bool excludeSelected;
   final EdgeInsets itemsListPadding, listItemPadding;
-  final _ListItemBuilder<T> listItemBuilder;
+  final _ListItemBuilder<T>? listItemBuilder;
   final ListItemDecoration? decoration;
   final _DropdownType dropdownType;
+  final _ListItemBuilder<T> defaultItemBuilder;
 
   const _ItemsList({
     super.key,
@@ -24,6 +25,7 @@ class _ItemsList<T> extends StatelessWidget {
     required this.selectedItems,
     required this.decoration,
     required this.dropdownType,
+    required this.defaultItemBuilder,
   });
 
   @override
@@ -41,6 +43,19 @@ class _ItemsList<T> extends StatelessWidget {
               !excludeSelected && selectedItem == items[index],
             _DropdownType.multipleSelect => selectedItems.contains(items[index])
           };
+
+          if (listItemBuilder != null) {
+            return Padding(
+              padding: listItemPadding,
+              child: listItemBuilder!(
+                context,
+                items[index],
+                selected,
+                () => onItemSelect(items[index]),
+              ),
+            );
+          }
+
           return Material(
             color: Colors.transparent,
             child: InkWell(
@@ -55,7 +70,7 @@ class _ItemsList<T> extends StatelessWidget {
                         ListItemDecoration._defaultSelectedColor)
                     : Colors.transparent,
                 padding: listItemPadding,
-                child: listItemBuilder(
+                child: defaultItemBuilder(
                   context,
                   items[index],
                   selected,

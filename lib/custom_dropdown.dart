@@ -46,7 +46,9 @@ const _defaultErrorStyle = TextStyle(
 );
 
 class CustomDropdown<T> extends StatefulWidget {
-  /// The list of items user can select.
+  /// The list of items user can select. This can be where a [String]
+  /// or any custom object using the [listItemBuilder]. to correctly
+  /// display the item as per the user's requirement.E
   final List<T>? items;
 
   /// Initial selected item from the list of [items].

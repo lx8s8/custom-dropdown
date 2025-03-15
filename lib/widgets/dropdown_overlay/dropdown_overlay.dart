@@ -270,7 +270,8 @@ class _DropdownOverlayState<T> extends State<_DropdownOverlay<T>> {
     final list = items.isNotEmpty
         ? _ItemsList<T>(
             scrollController: scrollController,
-            listItemBuilder: widget.listItemBuilder ?? defaultListItemBuilder,
+            listItemBuilder: widget.listItemBuilder,
+            defaultItemBuilder: defaultListItemBuilder,
             excludeSelected: items.length > 1 ? widget.excludeSelected : false,
             selectedItem: selectedItem,
             selectedItems: selectedItems,
