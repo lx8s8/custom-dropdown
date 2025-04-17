@@ -7,12 +7,12 @@ import 'package:flutter/scheduler.dart';
 
 export 'custom_dropdown.dart';
 
+part 'models/controllers.dart';
 // models
 part 'models/custom_dropdown_decoration.dart';
 part 'models/custom_dropdown_list_filter.dart';
 part 'models/disabled_decoration.dart';
 part 'models/list_item_decoration.dart';
-part 'models/controllers.dart';
 part 'models/search_field_decoration.dart';
 // utils
 part 'utils/signatures.dart';
@@ -218,9 +218,7 @@ class CustomDropdown<T> extends StatefulWidget {
           'Initial item must match with one of the item in items list.',
         ),
         assert(
-          controller == null ||
-              controller.value == null ||
-              items!.contains(controller.value),
+          controller == null || controller.value == null || items!.contains(controller.value),
           'Controller value must match with one of the item in items list.',
         ),
         _searchType = null,
@@ -278,9 +276,7 @@ class CustomDropdown<T> extends StatefulWidget {
           'Initial item must match with one of the item in items list.',
         ),
         assert(
-          controller == null ||
-              controller.value == null ||
-              items!.contains(controller.value),
+          controller == null || controller.value == null || items!.contains(controller.value),
           'Controller value must match with one of the item in items list.',
         ),
         _searchType = _SearchType.onListData,
@@ -512,35 +508,30 @@ class _CustomDropdownState<T> extends State<CustomDropdown<T>> {
   late MultiSelectController<T> selectedItemsNotifier;
   FormFieldState<(T?, List<T>)>? _formFieldState;
 
-  void _selectedItemListener() {
-    widget.onChanged?.call(selectedItemNotifier.value);
-    _formFieldState?.didChange((selectedItemNotifier.value, []));
-    if (widget.validateOnChange) {
-      _formFieldState?.validate();
-    }
-  }
-
-  void _selectedItemsListener() {
-    widget.onListChanged?.call(selectedItemsNotifier.value);
-    _formFieldState?.didChange((null, selectedItemsNotifier.value));
-    if (widget.validateOnChange) {
-      _formFieldState?.validate();
-    }
-  }
-
   @override
   void initState() {
     super.initState();
 
-    selectedItemNotifier =
-        widget.controller ?? SingleSelectController(widget.initialItem);
+    selectedItemNotifier = widget.controller ?? SingleSelectController(widget.initialItem);
 
-    selectedItemsNotifier = widget.multiSelectController ??
-        MultiSelectController(widget.initialItems ?? []);
+    selectedItemsNotifier =
+        widget.multiSelectController ?? MultiSelectController(widget.initialItems ?? []);
 
-    selectedItemNotifier.addListener(_selectedItemListener);
+    selectedItemNotifier.addListener(() {
+      widget.onChanged?.call(selectedItemNotifier.value);
+      _formFieldState?.didChange((selectedItemNotifier.value, []));
+      if (widget.validateOnChange) {
+        _formFieldState?.validate();
+      }
+    });
 
-    selectedItemsNotifier.addListener(_selectedItemsListener);
+    selectedItemsNotifier.addListener(() {
+      widget.onListChanged?.call(selectedItemsNotifier.value);
+      _formFieldState?.didChange((null, selectedItemsNotifier.value));
+      if (widget.validateOnChange) {
+        _formFieldState?.validate();
+      }
+    });
   }
 
   @override
@@ -561,8 +552,7 @@ class _CustomDropdownState<T> extends State<CustomDropdown<T>> {
       });
     }
 
-    if (widget.controller != oldWidget.controller &&
-        widget.controller != null) {
+    if (widget.controller != oldWidget.controller && widget.controller != null) {
       selectedItemNotifier = widget.controller!;
     }
 
@@ -576,16 +566,11 @@ class _CustomDropdownState<T> extends State<CustomDropdown<T>> {
   void dispose() {
     if (widget.controller == null) {
       selectedItemNotifier.dispose();
-    } else {
-      selectedItemNotifier.removeListener(_selectedItemListener);
     }
 
     if (widget.multiSelectController == null) {
       selectedItemsNotifier.dispose();
-    } else {
-      selectedItemsNotifier.removeListener(_selectedItemsListener);
     }
-
     super.dispose();
   }
 
@@ -601,8 +586,7 @@ class _CustomDropdownState<T> extends State<CustomDropdown<T>> {
       child: FormField<(T?, List<T>)>(
         initialValue: (selectedItemNotifier.value, selectedItemsNotifier.value),
         validator: (val) {
-          if (widget._dropdownType == _DropdownType.singleSelect &&
-              widget.validator != null) {
+          if (widget._dropdownType == _DropdownType.singleSelect && widget.validator != null) {
             return widget.validator!(val?.$1);
           }
           if (widget._dropdownType == _DropdownType.multipleSelect &&
@@ -619,6 +603,8 @@ class _CustomDropdownState<T> extends State<CustomDropdown<T>> {
               errorText: formFieldState.errorText,
               border: InputBorder.none,
               contentPadding: EdgeInsets.zero,
+              fillColor: formFieldState.hasError ? Colors.transparent : decoration?.closedFillColor,
+              filled: true,
             ),
             child: _OverlayBuilder(
               overlayPortalController: widget.overlayController,
@@ -629,6 +615,7 @@ class _CustomDropdownState<T> extends State<CustomDropdown<T>> {
                     switch (widget._dropdownType) {
                       case _DropdownType.singleSelect:
                         selectedItemNotifier.value = value;
+                        break;
                       case _DropdownType.multipleSelect:
                         final currentVal = selectedItemsNotifier.value.toList();
                         if (currentVal.contains(value)) {
@@ -637,10 +624,10 @@ class _CustomDropdownState<T> extends State<CustomDropdown<T>> {
                           currentVal.add(value);
                         }
                         selectedItemsNotifier.value = currentVal;
+                        break;
                     }
                   },
-                  noResultFoundText:
-                      widget.noResultFoundText ?? 'No result found.',
+                  noResultFoundText: widget.noResultFoundText ?? 'No result found.',
                   noResultFoundBuilder: widget.noResultFoundBuilder,
                   items: widget.items ?? [],
                   itemsScrollCtrl: widget.itemsScrollController,
@@ -666,14 +653,12 @@ class _CustomDropdownState<T> extends State<CustomDropdown<T>> {
                   searchType: widget._searchType,
                   futureRequest: widget.futureRequest,
                   futureRequestDelay: widget.futureRequestDelay,
-                  hideSelectedFieldWhenOpen:
-                      widget.hideSelectedFieldWhenExpanded,
+                  hideSelectedFieldWhenOpen: widget.hideSelectedFieldWhenExpanded,
                   maxLines: widget.maxlines,
                   headerPadding: widget.expandedHeaderPadding,
                   itemsListPadding: widget.itemsListPadding,
                   listItemPadding: widget.listItemPadding,
-                  searchRequestLoadingIndicator:
-                      widget.searchRequestLoadingIndicator,
+                  searchRequestLoadingIndicator: widget.searchRequestLoadingIndicator,
                   dropdownType: widget._dropdownType,
                 );
               },
@@ -693,28 +678,19 @@ class _CustomDropdownState<T> extends State<CustomDropdown<T>> {
                         : enabled
                             ? decoration?.closedBorderRadius
                             : disabledDecoration?.borderRadius,
-                    shadow: enabled
-                        ? decoration?.closedShadow
-                        : disabledDecoration?.shadow,
-                    hintStyle: enabled
-                        ? decoration?.hintStyle
-                        : disabledDecoration?.hintStyle,
-                    headerStyle: enabled
-                        ? decoration?.headerStyle
-                        : disabledDecoration?.headerStyle,
+                    shadow: enabled ? decoration?.closedShadow : disabledDecoration?.shadow,
+                    hintStyle: enabled ? decoration?.hintStyle : disabledDecoration?.hintStyle,
+                    headerStyle:
+                        enabled ? decoration?.headerStyle : disabledDecoration?.headerStyle,
                     hintText: safeHintText,
                     hintBuilder: widget.hintBuilder,
                     headerBuilder: widget.headerBuilder,
                     headerListBuilder: widget.headerListBuilder,
-                    prefixIcon: enabled
-                        ? decoration?.prefixIcon
-                        : disabledDecoration?.prefixIcon,
-                    suffixIcon: enabled
-                        ? decoration?.closedSuffixIcon
-                        : disabledDecoration?.suffixIcon,
-                    fillColor: enabled
-                        ? decoration?.closedFillColor
-                        : disabledDecoration?.fillColor,
+                    prefixIcon: enabled ? decoration?.prefixIcon : disabledDecoration?.prefixIcon,
+                    suffixIcon:
+                        enabled ? decoration?.closedSuffixIcon : disabledDecoration?.suffixIcon,
+                    fillColor:
+                        enabled ? decoration?.closedFillColor : disabledDecoration?.fillColor,
                     maxLines: widget.maxlines,
                     headerPadding: widget.closedHeaderPadding,
                     dropdownType: widget._dropdownType,
